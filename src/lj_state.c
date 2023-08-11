@@ -189,6 +189,11 @@ LUA_API lua_State *lua_newstate(lua_Alloc f, void *ud)
   GG_State *GG = (GG_State *)f(ud, NULL, 0, sizeof(GG_State));
   lua_State *L = &GG->L;
   global_State *g = &GG->g;
+
+#ifdef LJ_HAS_OPTIMISED_HASH
+  extern uint32_t LJ_CPU_FLAGS;
+  lj_str_hash_init (LJ_CPU_FLAGS);
+#endif
   if (GG == NULL || !checkptrGC(GG)) return NULL;
   memset(GG, 0, sizeof(GG_State));
   L->gct = ~LJ_TTHREAD;
@@ -225,6 +230,7 @@ LUA_API lua_State *lua_newstate(lua_Alloc f, void *ud)
     return NULL;
   }
   L->status = LUA_OK;
+  L->exdata = NULL;
   return L;
 }
 
@@ -284,6 +290,7 @@ lua_State *lj_state_new(lua_State *L)
   setgcrefr(L1->env, L->env);
   stack_init(L1, L);  /* init stack */
   lua_assert(iswhite(obj2gco(L1)));
+  L1->exdata = L->exdata;
   return L1;
 }
 

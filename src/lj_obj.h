@@ -638,7 +638,7 @@ typedef struct global_State {
 #define HOOK_PROFILE		0x80
 #define hook_active(g)		((g)->hookmask & HOOK_ACTIVE)
 #define hook_enter(g)		((g)->hookmask |= HOOK_ACTIVE)
-#define hook_entergc(g)		((g)->hookmask |= (HOOK_ACTIVE|HOOK_GC))
+#define hook_entergc(g)		((g)->hookmask = ((g)->hookmask | (HOOK_ACTIVE|HOOK_GC)) & ~HOOK_PROFILE)
 #define hook_vmevent(g)		((g)->hookmask |= (HOOK_ACTIVE|HOOK_VMEVENT))
 #define hook_leave(g)		((g)->hookmask &= ~HOOK_ACTIVE)
 #define hook_save(g)		((g)->hookmask & ~HOOK_EVENTMASK)
@@ -660,6 +660,11 @@ struct lua_State {
   GCRef env;		/* Thread environment (table of globals). */
   void *cframe;		/* End of C stack frame chain. */
   MSize stacksize;	/* True stack size (incl. LJ_STACK_EXTRA). */
+  void *exdata;	        /* user extra data pointer. added by OpenResty */
+#if LJ_TARGET_ARM
+  uint32_t unused1;
+  uint32_t unused2;
+#endif
 };
 
 #define G(L)			(mref(L->glref, global_State))

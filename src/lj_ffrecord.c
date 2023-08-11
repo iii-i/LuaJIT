@@ -28,6 +28,7 @@
 #include "lj_vm.h"
 #include "lj_strscan.h"
 #include "lj_strfmt.h"
+#include "lj_cdata.h"
 
 /* Some local macros to save typing. Undef'd at the end. */
 #define IR(ref)			(&J->cur.ir[(ref)])
@@ -949,9 +950,10 @@ static void LJ_FASTCALL recff_string_find(jit_State *J, RecordFFData *rd)
 		    str->len-(MSize)start, pat->len)) {
       TRef pos;
       emitir(IRTG(IR_NE, IRT_PGC), tr, trp0);
-      pos = emitir(IRTI(IR_SUB), tr, emitir(IRT(IR_STRREF, IRT_PGC), trstr, tr0));
-      J->base[0] = emitir(IRTI(IR_ADD), pos, lj_ir_kint(J, 1));
-      J->base[1] = emitir(IRTI(IR_ADD), pos, trplen);
+      /* Caveat: can't use STRREF trstr 0 here because that might be pointing into a wrong string due to folding. */
+      pos = emitir(IRTI(IR_SUB), tr, trsptr);
+      J->base[0] = emitir(IRTI(IR_ADD), pos, emitir(IRTI(IR_ADD), trstart, lj_ir_kint(J, 1)));
+      J->base[1] = emitir(IRTI(IR_ADD), pos, emitir(IRTI(IR_ADD), trplen, trstart));
       rd->nres = 2;
     } else {
       emitir(IRTG(IR_EQ, IRT_PGC), tr, trp0);
@@ -1103,6 +1105,21 @@ static void LJ_FASTCALL recff_table_clear(jit_State *J, RecordFFData *rd)
     lj_ir_call(J, IRCALL_lj_tab_clear, tr);
     J->needsnap = 1;
   }  /* else: Interpreter will throw. */
+}
+
+/* -- thread library fast functions ------------------------------------------ */
+
+void LJ_FASTCALL recff_thread_exdata(jit_State *J, RecordFFData *rd)
+{
+  TRef tr = J->base[0];
+  if (!tr) {
+    TRef trl = emitir(IRT(IR_LREF, IRT_THREAD), 0, 0);
+    TRef trp = emitir(IRT(IR_FLOAD, IRT_PTR), trl, IRFL_THREAD_EXDATA);
+    TRef trid = lj_ir_kint(J, CTID_P_VOID);
+    J->base[0] = emitir(IRTG(IR_CNEWI, IRT_CDATA), trid, trp);
+    return;
+  }
+  recff_nyiu(J, rd);  /* this case is too rare to be interesting */
 }
 
 /* -- I/O library fast functions ------------------------------------------ */
