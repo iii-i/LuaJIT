@@ -2136,6 +2136,7 @@ static void asm_setup_regsp(ASMState *as)
     case IR_SNEW: case IR_XSNEW: case IR_NEWREF: case IR_BUFPUT:
       if (REGARG_NUMGPR < 3 && as->evenspill < 3)
 	as->evenspill = 3;  /* lj_str_new and lj_tab_newkey need 3 args. */
+      /* fallthrough */
 #if LJ_TARGET_X86 && LJ_HASFFI
       if (0) {
     case IR_CNEW:
@@ -2176,7 +2177,7 @@ static void asm_setup_regsp(ASMState *as)
 	continue;
 #endif
       }
-      /* fallthrough for integer POW */
+      /* fallthrough */ /* for integer POW */
     case IR_DIV: case IR_MOD:
       if (!irt_isnum(ir->t)) {
 	ir->prev = REGSP_HINT(RID_RET);
