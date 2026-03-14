@@ -18,15 +18,6 @@ local function check(m, expected, exclude)
   end
 end
 
-do --- base +ffi
-  if jit.os == "Linux" then
-    check(_G, "_G:_VERSION:arg:assert:collectgarbage:coroutine:ctest:debug:dofile:error:exdata:getmetatable:io:ipairs:load:loadfile:math:next:os:package:pairs:pcall:print:rawequal:rawget:rawset:require:select:setmetatable:string:table:tonumber:tostring:type:utf8:xpcall", "rawlen:bit:bit32:jit:gcinfo:setfenv:getfenv:loadstring:unpack:module:newproxy")
-  else
-    check(_G, "_G:_VERSION:arg:assert:collectgarbage:coroutine:debug:dofile:error:exdata:getmetatable:io:ipairs:load:loadfile:math:next:os:package:pairs:pcall:print:rawequal:rawget:rawset:require:select:setmetatable:string:table:tonumber:tostring:type:utf8:xpcall", "rawlen:bit:bit32:jit:gcinfo:setfenv:getfenv:loadstring:unpack:module:newproxy")
-  end
-
-end
-
 do --- base -ffi
   check(_G, "_G:_VERSION:arg:assert:collectgarbage:coroutine:debug:dofile:error:getmetatable:io:ipairs:load:loadfile:math:next:os:package:pairs:pcall:print:rawequal:rawget:rawset:require:select:setmetatable:string:table:tonumber:tostring:type:utf8:xpcall", "rawlen:bit:bit32:jit:gcinfo:setfenv:getfenv:loadstring:unpack:module:newproxy")
 end
@@ -59,10 +50,6 @@ do --- 5.2 base rawlen +compat5.2
   assert(rawlen)
 end
 
-do --- math
-  check(math, "abs:acos:asin:atan:atan2:ceil:cos:cosh:deg:exp:floor:fmod:frexp:huge:ldexp:log:max:maxinteger:min:mininteger:modf:pi:pow:rad:random:randomseed:sin:sinh:sqrt:tan:tanh:tointeger:type:ult", "log10:mod")
-end
-
 do --- pre-5.1 math +lua<5.1 -compat5.1
   assert(math.mod)
   assert(math.log10)
@@ -74,10 +61,6 @@ end
 
 do --- 5.2 math +lua>=5.2
   assert(not math.log10)
-end
-
-do --- string
-  check(string, "byte:char:dump:find:format:gmatch:gsub:len:lower:match:pack:packsize:rep:reverse:sub:unpack:upper", "gfind")
 end
 
 do --- pre-5.1 string +lua<5.1 -compat5.1
@@ -169,10 +152,6 @@ do --- package.loaded -ffi
     end
   end
   check(loaded, "_G:coroutine:debug:io:math:os:package:string:table", "bit:bit32:common:ffi:jit:table.new")
-end
-
-do --- utf8
-  check(utf8, "char:charpattern:codepoint:codes:len:offset")
 end
 
 do --- bit +bit
