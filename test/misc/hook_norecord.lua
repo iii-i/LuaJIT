@@ -1,6 +1,7 @@
 do --- hook_norecord
   if not jit or not jit.status or not jit.status() then return end
 
+  jit.flush()
   local called = false
   local function f() local x = "wrong"; called = true end
   jit.off(f)
