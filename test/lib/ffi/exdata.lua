@@ -144,3 +144,6 @@ do --- Check number of arguments: JIT on +jit
   assert(total == 10)
 end
 
+do --- Restore JIT on
+  jit.on()
+end
